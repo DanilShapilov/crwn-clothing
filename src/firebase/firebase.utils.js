@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { doc, getDoc, setDoc, getFirestore } from "firebase/firestore";
+import { doc, getDoc, setDoc, getFirestore, collection, writeBatch } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -58,5 +58,34 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   }
 
   return userRef
-
 }
+
+export const convertCollectionsSnapshotToMap = (collections) => {
+  const transformedCollection = collections.docs.map(doc => {
+    const { title, items } = doc.data()
+
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items
+    }
+  })
+
+  return transformedCollection.reduce((acc, collection) => {
+    acc[collection.title.toLowerCase()] = collection
+    return acc
+  }, {})
+}
+
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+  const collectionRef = collection(firestore, collectionKey)
+
+  const batch = writeBatch(firestore)
+  objectsToAdd.forEach(obj => {
+    const newDocRef = doc(collectionRef)
+    batch.set(newDocRef, obj)
+  })
+  return await batch.commit()
+}
+
