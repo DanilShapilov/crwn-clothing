@@ -6,9 +6,11 @@ import {
   CollectionTitle,
   CollectionItemsContainer,
 } from "./collection.styles";
+import { useParams } from "react-router";
 
-const CollectionPage = ({ match }) => {
-  const collection = useSelector(selectCollection(match.params.collectionId));
+const CollectionPage = () => {
+  const { collectionId } = useParams();
+  const collection = useSelector(selectCollection(collectionId));
   const { title, items } = collection;
   return (
     <CollectionPageContainer>
