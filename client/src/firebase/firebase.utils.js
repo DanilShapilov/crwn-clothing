@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { doc, getDoc, setDoc, getFirestore, collection, writeBatch } from "firebase/firestore";
+import { doc, getDoc, setDoc, getFirestore, collection, writeBatch, where, query, getDocs } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -69,6 +69,20 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
 
   return userRef
 }
+
+export const getUserCartRef = async userId => {
+
+  const cartsRef = query(collection(firestore, 'carts'), where('userId', '==', userId));
+  const snapShot = await getDocs(cartsRef)
+
+  if (snapShot.empty) {
+    const cartDocRef = doc(collection(firestore, 'carts'))
+    await setDoc(cartDocRef, { userId, cartItems: [] })
+    return cartDocRef;
+  } else {
+    return snapShot.docs[0].ref;
+  }
+};
 
 export const convertCollectionsSnapshotToMap = (collections) => {
   const transformedCollection = collections.docs.map(doc => {
